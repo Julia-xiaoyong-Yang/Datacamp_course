@@ -9,3 +9,18 @@ In this exercise you will observe the problem on the IMDB data, with longer sent
 The data is loaded in X and y variables, as well as classes Sequential, SimpleRNN, Dense and matplotlib.pyplot as plt. 
 The model was pre-trained with 100 epochs, its weights and history are stored on the file model_weights.h5 and variable history.
 #################
+
+# Create the model
+model = Sequential()
+model.add(SimpleRNN(units=600, input_shape=(None, 1)))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['accuracy'])
+
+# Load pre-trained weights
+model.load_weights('model_weights.h5')
+
+# Plot the accuracy x epoch graph
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
