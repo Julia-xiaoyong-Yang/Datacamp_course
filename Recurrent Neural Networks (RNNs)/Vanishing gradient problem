@@ -1,0 +1,11 @@
+#################
+The other possible gradient problem is when the gradients vanish, or go to zero. 
+This is a much harder problem to solve because it is not as easy to detect. 
+If the loss function does not improve on every step, is it because the gradients went to zero and 
+thus didn't update the weights? Or is it because the model is not able to learn?
+This problem occurs more often in RNN models when long memory is required (having long sentences).
+
+In this exercise you will observe the problem on the IMDB data, with longer sentences selected. 
+The data is loaded in X and y variables, as well as classes Sequential, SimpleRNN, Dense and matplotlib.pyplot as plt. 
+The model was pre-trained with 100 epochs, its weights and history are stored on the file model_weights.h5 and variable history.
+#################
