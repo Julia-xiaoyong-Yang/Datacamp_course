@@ -1,0 +1,49 @@
+# in the case of multi-class classification
+# Get the numerical ids of column label
+numerical_ids = df.label.cat.codes
+
+# Print initial shape
+print(numerical_ids.shape)
+
+# Get the numerical ids of column label
+numerical_ids = df.label.cat.codes
+
+# Print initial shape
+print(numerical_ids.shape)
+
+# One-hot encode the indexes
+Y = to_categorical(numerical_ids)
+
+# Check the new shape of the variable
+print(Y.shape)
+
+# Get the numerical ids of column label
+numerical_ids = df.label.cat.codes
+
+# Print initial shape
+print(numerical_ids.shape)
+
+# One-hot encode the indexes
+Y = to_categorical(numerical_ids)
+
+# Check the new shape of the variable
+print(Y.shape)
+
+# Print the first 5 rows
+print(Y[:5])
+
+# second example
+# Create and fit tokenizer
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(news_dataset.data)
+
+# Prepare the data
+prep_data = tokenizer.texts_to_sequences(news_dataset.data)
+prep_data = pad_sequences(prep_data, maxlen=200)
+
+# Prepare the labels
+target_labels = to_categorical(prep_data)
+
+# Print the shapes
+print(prep_data.shape)
+print(target_labels.shape)
