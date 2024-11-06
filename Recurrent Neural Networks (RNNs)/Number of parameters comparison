@@ -1,0 +1,96 @@
+#############
+You saw that the one-hot representation is not a good representation of words because it is very sparse. Using the Embedding layer creates a dense representation of the vectors, but also demands a lot of parameters to be learned.
+In this exercise you will compare the number of parameters of two models using embeddings and one-hot encoding to see the difference.
+The model model_onehot is already loaded in the environment, as well as the Sequential, Dense and GRU from keras. Finally, the parameters vocabulary_size=80000 and sentence_len=200 are also loaded.
+############
+
+# Import the embedding layer
+from tensorflow.keras.layers import Embedding
+
+# Create a model with embeddings
+model = Sequential(name="emb_model")
+model.add(Embedding(input_dim=vocabulary_size+1, output_dim=wordvec_dim, input_length=sentence_len, trainable=True))
+model.add(GRU(128))
+model.add(Dense(1))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Print the summaries of the one-hot model
+model_onehot.summary()
+
+# Print the summaries of the model with embeddings
+model.summary()
+
+##########
+Transfer learning
+You saw that when training an embedding layer, you need to learn a lot of parameters.
+In this exercise, you will see that when using transfer learning it is possible to use the pre-trained weights and don't update them, meaning that all the parameters of the embedding layer will be fixed, and the model will only need to learn the parameters from the other layers
+############
+
+# Load the glove pre-trained vectors
+glove_matrix = load_glove('glove_200d.zip')
+
+# Create a model with embeddings
+model = Sequential(name="emb_model")
+model.add(Embedding(input_dim=vocabulary_size + 1, output_dim=wordvec_dim, 
+                    embeddings_initializer=Constant(glove_matrix), 
+                    input_length=sentence_len, trainable=False))
+model.add(GRU(128))
+model.add(Dense(1))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Print the summaries of the model with embeddings
+model.summary()
+
+# Create the model with embedding
+model = Sequential(name="emb_model")
+model.add(Embedding(input_dim=max_vocabulary, output_dim=wordvec_dim, input_length=max_len))
+model.add(SimpleRNN(units=128))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Load pre-trained weights
+model.load_weights('embedding_model_weights.h5')
+
+# Evaluate the models' performance (ignore the loss value)
+_, acc_embeddings = model.evaluate(X_test, y_test, verbose=0)
+
+# Print the results
+print("SimpleRNN model's accuracy:\t{0}\nEmbeddings model's accuracy:\t{1}".format(acc_simpleRNN, acc_embeddings))
+
+######
+You are going to add more complexity to the model and improve its accuracy. You will use an Embedding layer to train word vectors on the training set and two LSTM layers to keep track of longer texts. Also, you will add an extra Dense layer before the output.
+This is no longer a simple model, and the training can take some time. For this reason, a pre-trained model is available by loading its weights with the method .load_weights() from the keras.models.Sequential class. The model was trained with 10 epochs and its weights are available on the file model_weights.h5
+############
+# Build and compile the model
+model = Sequential()
+model.add(Embedding(vocabulary_size, wordvec_dim, trainable=True, input_length=max_text_len))
+model.add(LSTM(64, return_sequences=True, dropout=0.2, recurrent_dropout=0.15))
+model.add(LSTM(64, return_sequences=False, dropout=0.2, recurrent_dropout=0.15))
+model.add(Dense(16))
+model.add(Dropout(rate=0.25))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Load pre-trained weights
+model.load_weights('model_weights.h5')
+
+# Print the obtained loss and accuracy
+print("Loss: {0}\nAccuracy: {1}".format(*model.evaluate(X_test, y_test, verbose=0)))
+
+
+#######
+Using the CNN layer
+In this exercise, you will use a pre-trained model that makes use of the Conv1D and MaxPooling1D layers from the keras.layers.convolutional module, and achieves even better accuracy on the classification task.
+This architecture achieved good results in language modeling tasks such as classification, and is added here as an extra exercise to see it in action and have some intuitions.
+############
+# Print the model summary
+model_cnn.summary()
+
+# Load pre-trained weights
+model_cnn.load_weights('model_weights.h5')
+
+# Evaluate the model to get the loss and accuracy values
+loss, acc = model_cnn.evaluate(x_test, y_test, verbose=0)
+
+# Print the loss and accuracy obtained
+print("Loss: {0}\nAccuracy: {1}".format(loss, acc))
