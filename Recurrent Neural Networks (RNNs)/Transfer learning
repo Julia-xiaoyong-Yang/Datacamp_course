@@ -1,0 +1,141 @@
+Word2Vec
+##########
+The corpus used to pre-train the model is the script of all episodes of the The Big Bang Theory TV show, divided sentence by sentence. It is available in the variable bigbang.
+The text on the corpus was transformed to lower case and all words were tokenized. The result is stored in the tokenized_corpus variable.
+A Word2Vec model was pre-trained using a window size of 10 words for context (5 before and 5 after the center word), words with less than 3 occurrences were removed and the skip gram model method was used with 50 dimension. The model is saved on the file bigbang_word2vec.model.
+The class Word2Vec is already loaded in the environment from gensim.models.word2vec.
+#########
+
+# Word2Vec model
+w2v_model = Word2Vec.load('bigbang_word2vec.model')
+
+# Selected words to check similarities
+words_of_interest = ["bazinga", "penny", "universe", "spock", "brain"]
+
+# Compute top 5 similar words for each of the words of interest
+top5_similar_words = []
+for word in words_of_interest:
+    top5_similar_words.append(
+      {word: [item[0] for item in w2v_model.wv.most_similar([word], topn=5)]}
+    )
+
+# Print the similar words
+print(top5_similar_words)
+
+##########
+Exploring 20 News Groups dataset
+In this exercise, you will be given a sample of the 20 News Groups dataset obtained using the fetch_20newsgroups() function from sklearn.datasets, filtering only three classes: sci.space, alt.atheism and soc.religion.christian.
+
+The dataset is loaded in the variable news_dataset. Its attributes are printed so you can explore them on the console.
+
+Fore more details on how to use this function, see the Sklearn documentation.
+
+You will tokenize the texts and one-hot encode the labels step by step to understand how the transformations happen.
+###########
+# See example article
+print(news_dataset.data[5])
+
+# Transform the text into numerical indexes
+news_num_indices = tokenizer.texts_to_sequences(news_dataset.data)
+
+# Print the transformed example article
+print(news_num_indices[5])
+
+
+# Transform the labels into one-hot encoded vectors
+labels_onehot = to_categorical(news_dataset.target)
+
+# Check before and after for the sample article
+print("Before: {0}\nAfter: {1}".format(news_dataset.target[5],labels_onehot[5]))
+
+##########
+Classifying news articles
+In this exercise you will create a multi-class classification model.
+
+The dataset is already loaded in the environment as news_novel. Also, all the pre-processing of the training data is already done and tokenizer is also available in the environment.
+
+A RNN model was pre-trained with the following architecture: use the Embedding layer, one LSTM layer and the output Dense layer expecting three classes: sci.space, alt.atheism, and soc.religion.christian. The weights of this trained model are available on the classify_news_weights.h5 file.
+
+You will pre-process the novel data and evaluate on a new dataset news_novel.
+##########
+# Change text for numerical ids and pad
+X_novel = tokenizer.texts_to_sequences(news_novel.data)
+X_novel = pad_sequences(X_novel, maxlen=400)
+
+# One-hot encode the labels
+Y_novel = to_categorical(news_novel.target)
+
+# Load the model pre-trained weights
+model.load_weights('classify_news_weights.h5')
+
+# Evaluate the model on the new dataset
+loss, acc = model.evaluate(X_novel, Y_novel, batch_size=64)
+
+# Print the loss and accuracy obtained
+print("Loss:\t{0}\nAccuracy:\t{1}".format(loss, acc))
+
+#########
+Precision-Recall trade-off
+When working with classification tasks, the term Precision-Recall trade-off often appears. Where does it comes from?
+
+Usually, the class with higher probability is chosen to assign the document to. But, what if the maximum probability is equal to 0.1? Should you consider that document to belong to this class with only 10% probability?
+
+The answer varies according to problem at hand. It is possible to add a minimum threshold to accept the classification, and by changing the threshold the values of precision and recall move in opposite directions.
+
+The variables y_true and the model model are loaded. Also, if the probability is lower than the threshold, the document will be assigned to DEFAULT_CLASS (chosen to be class 2).
+################
+# Get probabilities for each class
+pred_probabilities = model.predict(X_test)
+
+# Thresholds at 0.5 and 0.8
+y_pred_50 = [np.argmax(x) if np.max(x) >= 0.5 else DEFAULT_CLASS for x in pred_probabilities]
+y_pred_80 = [np.argmax(x) if np.max(x) >= 0.8 else DEFAULT_CLASS for x in pred_probabilities]
+
+trade_off = pd.DataFrame({
+    'Precision_50': precision_score(y_true, y_pred_50, average=None), 
+    'Precision_80': precision_score(y_true, y_pred_80, average=None), 
+    'Recall_50': recall_score(y_true, y_pred_50, average=None), 
+    'Recall_80': recall_score(y_true, y_pred_80, average=None)}, 
+  index=['Class 1', 'Class 2', 'Class 3'])
+
+print(trade_off)
+
+##########
+Precision or Recall, that is the question
+You learned about a few performance metrics and maybe you are asking, when should I use precision and when should I use recall? Those two metrics are calculated for each class, and sometimes it is difficult to understand when to focus on one and when to focus on the other.
+
+Precision is a metric that measures how well the model is predicting some class, while recall measures how well a class is being classified. If precision is high for one class, you can trust your model when it predicts that class. When recall is high for a class, you can rest assured that that class is well understood by the model.
+
+Follow the instruction to see this comparison between precision and recall with an example. The functions precision_score() and recall_score() are loaded.
+############
+# Compute the precision of the sentiment model
+prec_sentiment = precision_score(sentiment_y_true, sentiment_y_pred, average=None)
+print(prec_sentiment)
+
+# Compute the recall of the sentiment model
+rec_sentiment = recall_score(sentiment_y_true, sentiment_y_pred, average=None)
+print(rec_sentiment)
+
+############
+
+Text generation examples
+In this exercise, you are going to experiment on two pre-trained models for text generation.
+
+The first model will generate one phrase based on the character Sheldon of The Big Bang Theory TV show, and the second model will generate a Shakespeare poems up to 400 characters.
+
+The models are loaded on the sheldon_model and poem_model variables. Also, two custom functions to help generate text are available: generate_sheldon_phrase() and generate_poem(). Both receive the pre-trained model and a context string as parameters.
+################
+# Context for Sheldon phrase
+sheldon_context = "I’m not insane, my mother had me tested. "
+
+# Generate one Sheldon phrase
+sheldon_phrase = generate_sheldon_phrase(sheldon_model, sheldon_context)
+
+# Print the phrase
+print(sheldon_phrase)
+
+# Context for poem
+poem_context = "May thy beauty forever remain"
+
+# Print the poem
+print(generate_poem(poem_model, poem_context))
