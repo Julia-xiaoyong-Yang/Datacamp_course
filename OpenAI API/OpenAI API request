@@ -1,0 +1,168 @@
+###############
+Your first OpenAI API request!
+To give you a taste of what's to come, the Python code to send a request to the OpenAI API has been set up for you.
+
+Pass the prompt argument any prompt you wish to see how OpenAI's model responds. The prompt can be phrased as a question or instruction, so dive in and start prompting!
+
+Here are a few prompts to try if you're struggling for ideas:
+
+Simply and concisely, explain why learning about the OpenAI API is important for developers.
+I work as a {insert your job title}. Give me three concise suggestions for tasks that could be automated with the OpenAI API.
+In two sentences, how can the OpenAI API be used to upskill myself?
+####################
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    # Write your prompt
+    messages=[{"role": "user", "content": "Simply and concisely, explain why learning about the OpenAI API is important for developers."}],
+    max_tokens=200
+)
+
+print(response.choices[0].message.content)
+# Extract the model from response
+print(response.model)
+# Extract the total_tokens from response
+print(response.usage.total_tokens)
+
+
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+prompt="""Summarize the following text into two concise bullet points:
+Investment refers to the act of committing money or capital to an enterprise with the expectation of obtaining an added income or profit in return. There are a variety of investment options available, including stocks, bonds, mutual funds, real estate, precious metals, and currencies. Making an investment decision requires careful analysis, assessment of risk, and evaluation of potential rewards. Good investments have the ability to produce high returns over the long term while minimizing risk. Diversification of investment portfolios reduces risk exposure. Investment can be a valuable tool for building wealth, generating income, and achieving financial security. It is important to be diligent and informed when investing to avoid losses."""
+
+# Create a request to the Chat Completions endpoint
+response = client.chat.completions.create(
+  model="gpt-4o-mini",
+  messages=[{"role":"user", "content":prompt}],
+  max_tokens = 400,
+temperature = 0
+)
+
+print(response.choices[0].message.content)
+
+
+##############
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+# Create a request to the Chat Completions endpoint
+response = client.chat.completions.create(
+  model="gpt-4o-mini",
+  max_tokens=150,
+  messages=[
+    {"role": "user",
+     "content": "You are a helpful data science tutor."},
+    {"role": "system",
+     "content": "You are a helpful data science tutor."},
+  ]
+)
+
+# Extract and print the assistant's text response
+print(response.choices[0].message.content)
+
+##########
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+instruction = """Explain what this Python code does in one sentence:
+import numpy as np
+
+heights_dict = {"Mark": 1.76, "Steve": 1.88, "Adnan": 1.73}
+heights = heights_dict.values()
+print(np.mean(heights))
+"""
+
+# Create a request to the Chat Completions endpoint
+response = client.chat.completions.create(
+  model="gpt-4o-mini",
+  messages=[{"role":"system", "content":instruction}],
+  max_tokens=100
+)
+
+print(response.choices[0].message.content)
+
+##############
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+response = client.chat.completions.create(
+   model="gpt-4o-mini",
+   # Add a user and assistant message for in-context learning
+   messages=[
+     {"role": "system", "content": "You are a helpful Python programming tutor."},
+     {"role":"user","content":"Explain what the min() Python function does"},
+     {"role":"assistant","content":"The min() function returns the smallest item from an iterable."},
+     {"role": "user", "content": "Explain what the type() function does."}
+   ]
+)
+
+print(response.choices[0].message.content)
+
+#######
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+messages = [{"role": "system", "content": "You are a helpful math tutor."}]
+user_msgs = ["Explain what pi is.", "Summarize this in two bullet points."]
+
+for q in user_msgs:
+    print("User: ", q)
+    
+    # Create a dictionary for the user message from q and append to messages
+    user_dict = {"role":"user", "content": q}
+    messages.append(user_dict)
+    
+    # Create the API request
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=100
+    )
+    
+    # Convert the assistant's message to a dict and append to messages
+    assistant_dict = {"role": "assistant", "content": response.choices[0].message.content}
+    messages.append(assistant_dict)
+    print("Assistant: ", response.choices[0].message.content, "\n")
+
+############
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+# Create a request to the Moderation endpoint
+response = client.moderations.create(
+    model="text-moderation-latest",
+    input = "My favorite book is To Kill a Mockingbird."
+)
+
+# Print the category scores
+print(response.results[0].category_scores)
+
+################
+Creating a podcast transcript
+The OpenAI API Audio endpoint provides access to the Whisper model, which can be used for speech-to-text transcription and translation. In this exercise, you'll create a transcript from a DataFramed podcast episode with OpenAI Developer, Logan Kilpatrick.
+
+If you'd like to hear more from Logan, check out the full ChatGPT and the OpenAI Developer Ecosystem podcast episode.
+##################
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+# Open the openai-audio.mp3 file
+audio_file = open("openai-audio.mp3","rb")
+
+# Create a transcript from the audio file
+response = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
+
+# Extract and print the transcript text
+print(response.text)
+
+##############
+client = OpenAI(api_key="<OPENAI_API_TOKEN>")
+
+# Open the audio.wav file
+audio_file = open("audio.wav", "rb")
+
+# Create a transcription request using audio_file
+audio_response = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
+transcript = audio_response.text
+# Create a request to the API to identify the language spoken
+chat_response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role":"user", "content":transcript}]
+
+)
+print(chat_response.choices[0].message.content)
