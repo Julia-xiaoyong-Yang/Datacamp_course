@@ -1,0 +1,11 @@
+# Fill in the 3-shot prompt (you can use multiple lines)
+text="""
+Review 1: happy
+Review 2: unhappy
+Review 3: Neutral
+Review 4: Delicious food, and excellent customer service! 
+Sentiment 4:"""
+
+output = llm(text, max_tokens=2,stop=["Q:"]) 
+
+print(output['choices'][0]['text'])
