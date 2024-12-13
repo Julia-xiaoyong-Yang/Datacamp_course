@@ -1,0 +1,159 @@
+# Load the tokenizer and pre-trained model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(
+  model_name, num_labels=2)
+
+text = ["The best movie I've ever watched!", "What an awful movie. I regret watching it."]
+
+# Tokenize inputs and pass them to the model for inference
+inputs = tokenizer(text, return_tensors="pt", padding=True)
+outputs = model(**inputs)
+logits = outputs.logits
+
+predicted_classes = torch.argmax(logits, dim=1).tolist()
+for idx, predicted_class in enumerate(predicted_classes):
+    print(f"Predicted class for \"{text[idx]}\": {predicted_class}")
+
+
+.............
+  model_name = "Helsinki-NLP/opus-mt-en-es"
+
+# Load the tokenizer and the model checkpoint
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+english_inputs = ["Hello", "Thank you", "How are you?", "Sorry", "Goodbye"]
+
+# Encode the inputs, generate translations, decode, and print them
+for english_input in english_inputs:
+    input_ids = tokenizer.encode(english_input, return_tensors="pt")
+    translated_ids = model.generate(input_ids)
+    translated_text = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
+    print(f"English: {english_input} | Spanish: {translated_text}")
+
+
+
+  ...........................
+# Load a specific subset of the dataset 
+mlqa = load_dataset("xtreme", name = "MLQA.en.en")
+
+question = mlqa["test"]["question"][0]
+context = mlqa["test"]["context"][0]
+print("Question: ", question)
+print("Context: ", context)
+
+# Initialize the tokenizer using the model checkpoint
+tokenizer = AutoTokenizer.from_pretrained("deepset/minilm-uncased-squad2")
+# Tokenize the inputs returning the result as tensors
+inputs = tokenizer(question, context, return_tensors="pt")
+print("First five encoded tokens: ", inputs["input_ids"][0][:5])
+
+  ..........................
+# Initialize the LLM upon the model checkpoint
+model = AutoModelForQuestionAnswering.from_pretrained(model_ckp)
+
+with torch.no_grad():
+  # Forward-pass the input through the model
+  outputs = model(**inputs)
+
+# Get the most likely start and end answer position from the raw LLM outputs
+start_idx = torch.argmax(outputs.start_logits)
+end_idx = torch.argmax(outputs.end_logits) + 1
+
+# Access the tokenized inputs tensor to get the answer span
+answer_span = inputs["input_ids"][0][start_idx:end_idx]
+
+# Decode the answer span to get the extracted answer text
+answer = tokenizer.decode(answer_span)
+print("Answer: ", answer)
+
+.....................
+# Load a pre-trained LLM, specifying its use for binary classification
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+
+# Set up training arguments with a batch size of 8 per GPU and 5 epochs
+training_args = TrainingArguments(
+    output_dir="./smaller_bert_finetuned",
+    per_device_train_batch_size=8,
+    num_train_epochs=5,
+)
+# Set up trainer, assigning previously set up training arguments
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets,
+)
+
+
+...........................
+# Initialize the trainer and assign a training and validation set to it
+trainer = Trainer(model=model, args=training_args,
+    			compute_metrics=compute_metrics,
+    			train_dataset=topics_encoded["train_random"],
+    			eval_dataset=topics_encoded["validation_random"],
+    			tokenizer=tokenizer
+)
+
+# Training loop to fine-tune the model
+# trainer.train()
+
+input_texts = ["It's dark and rainy outside", "I love penguins!"]
+
+# Tokenize the input sequences and pass them to the model
+inputs = tokenizer(input_texts, return_tensors="pt", padding=True, truncation=True)
+with torch.no_grad():
+    outputs=model(**inputs)
+
+# Obtain class labels from raw predictions
+predicted_labels = torch.argmax(outputs.logits, dim=1).tolist()
+
+for i, predicted_label in enumerate(predicted_labels):
+    print(f"\n Input Text {i + 1}: {input_texts[i]}")
+    print(f"Predicted Label: {predicted_label}")
+
+................
+# Pass the four input texts (without labels) to the pipeline
+predictions = sentiment_analysis([example["text"] for example in test_examples])
+
+true_labels = [example["label"] for example in test_examples]
+predicted_labels = [1 if pred["label"] == "POSITIVE" else 0 for pred in predictions]
+
+# Load the accuracy metric
+accuracy = evaluate.load("accuracy")
+
+result = accuracy.compute(references=true_labels, predictions=predicted_labels)
+print(result)
+
+............
+# Calculate the individual toxicities, maximum toxicities, and toxicity ratios
+toxicity_1 = toxicity_metric.compute(predictions=emp_1)
+toxicity_2 = toxicity_metric.compute(predictions=emp_2)
+print("Toxicities (emp. 1):", toxicity_1['toxicity'])
+print("Toxicities (emp. 2): ", toxicity_2['toxicity'])
+
+toxicity_1_max = toxicity_metric.compute(predictions=emp_1, aggregation="maximum")
+toxicity_2_max = toxicity_metric.compute(predictions=emp_2, aggregation="maximum")
+print("Maximum toxicity (emp. 1):", toxicity_1_max['max_toxicity'])
+print("Maximum toxicity (emp. 2): ", toxicity_2_max['max_toxicity'])
+
+toxicity_1_ratio = toxicity_metric.compute(predictions=emp_1, aggregation="ratio")
+toxicity_2_ratio = toxicity_metric.compute(predictions=emp_2, aggregation="ratio")
+print("Toxicity ratio (emp. 1):", toxicity_1_ratio['toxicity_ratio'])
+print("Toxicity ratio (emp. 2): ", toxicity_2_ratio['toxicity_ratio'])
+
+...............
+# Load the regard and regard-comparison metrics
+regard = evaluate.load("regard")
+regard_comp = evaluate.load("regard", "compare")
+
+# Compute the regard (polarities) of each group separately
+polarity_results_1 = regard.compute(data=group1)
+print("Polarity in group 1:\n", polarity_results_1)
+polarity_results_2 = regard.compute(data=group2)
+print("Polarity in group 2:\n", polarity_results_2)
+
+# Compute the relative regard between the two groups for comparison
+polarity_results_comp = regard_comp.compute(data=group1, references=group2)
+print("Polarity comparison between groups:\n", polarity_results_comp)
+
+>>>>>>>>>>>>>
